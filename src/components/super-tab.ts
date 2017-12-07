@@ -1,189 +1,196 @@
 import {
-  Component, Input, Renderer, ElementRef, ViewEncapsulation, Optional, ComponentFactoryResolver,
-  NgZone, ViewContainerRef, ViewChild, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef, ErrorHandler
+	Component, Input, Renderer, ElementRef, ViewEncapsulation, Optional, ComponentFactoryResolver,
+	NgZone, ViewContainerRef, ViewChild, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef, ErrorHandler
 } from '@angular/core';
 import {
-  NavControllerBase, App, Config, Platform, GestureController, DeepLinker, DomController, NavOptions,
-  ViewController
+	NavControllerBase, App, Config, Platform, GestureController, DeepLinker, DomController, NavOptions,
+	ViewController
 } from 'ionic-angular';
 import { TransitionController } from 'ionic-angular/transitions/transition-controller';
 import { SuperTabs } from './super-tabs';
 
 @Component({
-  selector: 'super-tab',
-  template: '<div #viewport></div><div class="nav-decor"></div>',
-  encapsulation: ViewEncapsulation.None
+	selector: 'super-tab',
+	template: '<div #viewport></div><div class="nav-decor"></div>',
+	encapsulation: ViewEncapsulation.None
 })
 export class SuperTab extends NavControllerBase implements OnInit, AfterViewInit, OnDestroy {
 
-  /**
-   * Title of the tab
-   */
-  @Input()
-  title: string;
+	/**
+	 * Boolean indicating whether swiping is enabled for this tab
+	 * @type {boolean}
+	 */
+	@Input()
+	private swipeEnabled: boolean;
 
-  // TODO find less hacky approach
-  // needed to make Ionic Framework think this is a tabs component... needed for Deeplinking
-  get tabTitle() {
-    return this.title;
-  }
+	/**
+	 * Title of the tab
+	 */
+	@Input()
+	title: string;
 
-  // needed to make Ionic Framework think this is a tabs component... needed for Deeplinking
-  get index() {
-    return this.parent.getTabIndexById(this.tabId);
-  }
+	// TODO find less hacky approach
+	// needed to make Ionic Framework think this is a tabs component... needed for Deeplinking
+	get tabTitle() {
+		return this.title;
+	}
 
-  /**
-   * Name of the ionicon to use
-   */
-  @Input()
-  icon: string;
+	// needed to make Ionic Framework think this is a tabs component... needed for Deeplinking
+	get index() {
+		return this.parent.getTabIndexById(this.tabId);
+	}
 
-  /**
-   * @input {Page} Set the root page for this tab.
-   */
-  @Input() root: any;
+	/**
+	 * Name of the ionicon to use
+	 */
+	@Input()
+	icon: string;
 
-  /**
-   * @input {object} Any nav-params to pass to the root page of this tab.
-   */
-  @Input() rootParams: any;
+	/**
+	 * @input {Page} Set the root page for this tab.
+	 */
+	@Input() root: any;
 
-  @Input('id')
-  tabId: string;
+	/**
+	 * @input {object} Any nav-params to pass to the root page of this tab.
+	 */
+	@Input() rootParams: any;
 
-  get _tabId() {
-    return this.tabId;
-  }
+	@Input('id')
+	tabId: string;
 
-  /**
-   * Badge value
-   * @type {Number}
-   */
-  @Input()
-  badge: number;
+	get _tabId() {
+		return this.tabId;
+	}
+
+	/**
+	 * Badge value
+	 * @type {Number}
+	 */
+	@Input()
+	badge: number;
 
 
-  /**
-   * Enable/disable swipe to go back for iOS
-   * @return {boolean}
-   */
-  @Input()
-  get swipeBackEnabled(): boolean {
-    return this._sbEnabled;
-  }
-  set swipeBackEnabled(val: boolean) {
-    this._sbEnabled = Boolean(val);
-    this._swipeBackCheck();
-  }
+	/**
+	 * Enable/disable swipe to go back for iOS
+	 * @return {boolean}
+	 */
+	@Input()
+	get swipeBackEnabled(): boolean {
+		return this._sbEnabled;
+	}
+	set swipeBackEnabled(val: boolean) {
+		this._sbEnabled = Boolean(val);
+		this._swipeBackCheck();
+	}
 
-  /**
-   * @hidden
-   */
-  @ViewChild('viewport', {read: ViewContainerRef})
-  set _vp(val: ViewContainerRef) {
-    this.setViewport(val);
-  }
+	/**
+	 * @hidden
+	 */
+	@ViewChild('viewport', { read: ViewContainerRef })
+	set _vp(val: ViewContainerRef) {
+		this.setViewport(val);
+	}
 
-  /**
-   * Indicates whether the tab has been loaded
-   * @type {boolean}
-   */
-  private loaded: boolean = false;
+	/**
+	 * Indicates whether the tab has been loaded
+	 * @type {boolean}
+	 */
+	private loaded: boolean = false;
 
-  /**
-   * A promise that resolves when the component has initialized
-   */
-  private init: Promise<any>;
+	/**
+	 * A promise that resolves when the component has initialized
+	 */
+	private init: Promise<any>;
 
-  /**
-   * Function to call to resolve the init promise
-   */
-  private initResolve: Function;
+	/**
+	 * Function to call to resolve the init promise
+	 */
+	private initResolve: Function;
 
-  constructor(
-    parent: SuperTabs,
-    app: App,
-    config: Config,
-    plt: Platform,
-    el: ElementRef,
-    zone: NgZone,
-    rnd: Renderer,
-    cfr: ComponentFactoryResolver,
-    gestureCtrl: GestureController,
-    transCtrl: TransitionController,
-    errorHandler: ErrorHandler,
-    @Optional() private linker: DeepLinker,
-    private _dom: DomController,
-    private cd: ChangeDetectorRef
-  ) {
-    super(parent, app, config, plt, el, zone, rnd, cfr, gestureCtrl, transCtrl, linker, _dom, errorHandler);
-    this.init = new Promise<void>(resolve => this.initResolve = resolve);
-  }
+	constructor(
+		parent: SuperTabs,
+		app: App,
+		config: Config,
+		plt: Platform,
+		el: ElementRef,
+		zone: NgZone,
+		rnd: Renderer,
+		cfr: ComponentFactoryResolver,
+		gestureCtrl: GestureController,
+		transCtrl: TransitionController,
+		errorHandler: ErrorHandler,
+		@Optional() private linker: DeepLinker,
+		private _dom: DomController,
+		private cd: ChangeDetectorRef
+	) {
+		super(parent, app, config, plt, el, zone, rnd, cfr, gestureCtrl, transCtrl, linker, _dom, errorHandler);
+		this.init = new Promise<void>(resolve => this.initResolve = resolve);
+	}
 
-  _didEnter(view: ViewController) {
-    if (this.loaded) {
-      super._didEnter(view);
-    }
-  }
+	_didEnter(view: ViewController) {
+		if (this.loaded) {
+			super._didEnter(view);
+		}
+	}
 
-  _willEnter(view: ViewController) {
-    if (this.loaded) {
-      super._willEnter(view);
-    }
-  }
+	_willEnter(view: ViewController) {
+		if (this.loaded) {
+			super._willEnter(view);
+		}
+	}
 
-  ngOnInit() {
-    this.parent.addTab(this);
-  }
+	ngOnInit() {
+		this.parent.addTab(this);
+	}
 
-  ngAfterViewInit() {
-    this.initResolve();
-  }
+	ngAfterViewInit() {
+		this.initResolve();
+	}
 
-  ngOnDestroy() {
-    this.destroy();
-  }
+	ngOnDestroy() {
+		this.destroy();
+	}
 
-  setActive(active: boolean) {
-    if (active) {
-      this.cd.reattach();
-      this.cd.detectChanges();
-    } else if (!active) {
-      this.cd.detach();
-    }
-  }
+	setActive(active: boolean) {
+		if (active) {
+			this.cd.reattach();
+			this.cd.detectChanges();
+		} else if (!active) {
+			this.cd.detach();
+		}
+	}
 
-  async load(load: boolean) {
-    if (load && !this.loaded) {
-      await this.init;
-      await this.push(this.root, this.rootParams, { animate: false });
-      this.loaded = true;
-    }
-  }
+	async load(load: boolean) {
+		if (load && !this.loaded) {
+			await this.init;
+			await this.push(this.root, this.rootParams, { animate: false });
+			this.loaded = true;
+		}
+	}
 
-  setBadge(value: number) {
-    this.badge = value;
-  }
+	setBadge(value: number) {
+		this.badge = value;
+	}
 
-  clearBadge() {
-    delete this.badge;
-  }
+	clearBadge() {
+		delete this.badge;
+	}
 
-  increaseBadge(increaseBy: number = 1) {
-    this.badge += increaseBy;
-  }
+	increaseBadge(increaseBy: number = 1) {
+		this.badge += increaseBy;
+	}
 
-  decreaseBadge(decreaseBy: number = 1) {
-    this.badge = Math.max(0, this.badge - decreaseBy);
-  }
+	decreaseBadge(decreaseBy: number = 1) {
+		this.badge = Math.max(0, this.badge - decreaseBy);
+	}
 
-  setWidth(width: number) {
-    this.setElementStyle('width', width + 'px');
-  }
+	setWidth(width: number) {
+		this.setElementStyle('width', width + 'px');
+	}
 
-  goToRoot(opts: NavOptions): Promise<any> {
-    return this.setRoot(this.root, this.rootParams, opts, null);
-  }
+	goToRoot(opts: NavOptions): Promise<any> {
+		return this.setRoot(this.root, this.rootParams, opts, null);
+	}
 
 }

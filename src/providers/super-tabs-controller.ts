@@ -26,26 +26,26 @@ export class SuperTabsController {
     instance && instance.decreaseBadge(tabId, decreaseBy);
   }
 
-  /**
-   * Enables/disables swiping on a specific tabs instance
-   * @param enable
-   * @param [tabsId]
-   */
-  enableTabsSwipe(enable: boolean, tabsId?: string) {
-    const instance = this.getInstance(tabsId);
-    instance && instance.enableTabsSwipe(enable);
-  }
+//   /**
+//    * Enables/disables swiping on a specific tabs instance
+//    * @param enable
+//    * @param [tabsId]
+//    */
+//   enableTabsSwipe(enable: boolean, tabsId?: string) {
+//     const instance = this.getInstance(tabsId);
+//     instance && instance.enableTabsSwipe(enable);
+//   }
 
-  /**
-   * Enables/disables swiping when this tab is active
-   * @param tabId
-   * @param enable
-   * @param [tabsId]
-   */
-  enableTabSwipe(tabId: string, enable: boolean, tabsId?: string) {
-    const instance = this.getInstance(tabsId);
-    instance && instance.enableTabSwipe(tabId, enable);
-  }
+//   /**
+//    * Enables/disables swiping when this tab is active
+//    * @param tabId
+//    * @param enable
+//    * @param [tabsId]
+//    */
+//   enableTabSwipe(tabId: string, enable: boolean, tabsId?: string) {
+//     const instance = this.getInstance(tabsId);
+//     instance && instance.enableTabSwipe(tabId, enable);
+//   }
 
   showToolbar(show: boolean, tabsId?: string) {
     const instance = this.getInstance(tabsId);

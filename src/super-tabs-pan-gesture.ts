@@ -5,146 +5,154 @@ import { Renderer2 } from '@angular/core';
 
 export class SuperTabsPanGesture {
 
-  onMove: (delta: number) => void;
+	onMove: (delta: number) => void;
 
-  onEnd: (shortSwipe: boolean, shortSwipeDelta?: number) => void;
+	onEnd: (shortSwipe: boolean, shortSwipeDelta?: number) => void;
 
-  private initialCoords: PointerCoordinates;
+	private initialCoords: PointerCoordinates;
 
-  private initialTimestamp: number;
+	private initialTimestamp: number;
 
-  private leftThreshold: number = 0;
+	private leftThreshold: number = 0;
 
-  private rightThreshold: number = 0;
+	private rightThreshold: number = 0;
 
-  private shouldCapture: boolean;
+	private shouldCapture: boolean;
 
-  private isDragging: boolean;
+	private isDragging: boolean;
 
-  private lastPosX: number;
+	private lastPosX: number;
 
-  private listeners: Function[] = [];
+	private listeners: Function[] = [];
 
-  constructor(
-    private plt: Platform,
-    private el: HTMLElement,
-    private config: SuperTabsConfig,
-    private rnd: Renderer2,
-    private globalSwipeEnabled: boolean
-  ) {
-    if (!this.globalSwipeEnabled) return;
-      
-    this.listeners.push(
-      rnd.listen(el, 'touchstart', this._onStart.bind(this)),
-      rnd.listen(el, 'touchmove', this._onMove.bind(this)),
-      rnd.listen(el, 'touchend', this._onEnd.bind(this))
-    );
+	public selectedTabIndex: number;
 
-    if (config.sideMenu === 'both' || config.sideMenu === 'left') {
-      this.leftThreshold = config.sideMenuThreshold;
-    }
+	constructor(
+		private plt: Platform,
+		private el: HTMLElement,
+		private config: SuperTabsConfig,
+		private rnd: Renderer2,
+		private globalSwipeEnabled: boolean,
+		private swipeEnabledPerTab: { [index: number]: boolean }
+	) {
+		if (!this.globalSwipeEnabled) return;
 
-    if (config.sideMenu === 'both' || config.sideMenu === 'right') {
-      this.rightThreshold = config.sideMenuThreshold;
-    }
+		this.listeners.push(
+			rnd.listen(el, 'touchstart', this._onStart.bind(this)),
+			rnd.listen(el, 'touchmove', this._onMove.bind(this)),
+			rnd.listen(el, 'touchend', this._onEnd.bind(this))
+		);
 
-  }
+		if (config.sideMenu === 'both' || config.sideMenu === 'left') {
+			this.leftThreshold = config.sideMenuThreshold;
+		}
+		
+		if (config.sideMenu === 'both' || config.sideMenu === 'right') {
+			this.rightThreshold = config.sideMenuThreshold;
+		}
 
-  destroy() {
-    this.listeners.forEach(fn => fn());
-  }
+	}
 
-  private _onStart(ev: TouchEvent) {
-    const coords: PointerCoordinates = pointerCoord(ev),
-      vw = this.plt.width();
+	destroy() {
+		this.listeners.forEach(fn => fn());
+	}
 
-    if (coords.x < this.leftThreshold || coords.x > vw - this.rightThreshold) {
-      // ignore this gesture, it started in the side menu touch zone
-      this.shouldCapture = false;
-      return;
-    }
+	private _onStart(ev: TouchEvent) {
+		if (this.swipeEnabledPerTab[this.selectedTabIndex] === false) return;
 
-    // the starting point looks good, let's see what happens when we move
+		const coords: PointerCoordinates = pointerCoord(ev),
+			vw = this.plt.width();
 
-    this.initialCoords = coords;
-    if (this.config.shortSwipeDuration > 0) this.initialTimestamp = Date.now();
-    this.lastPosX = coords.x;
+		if (coords.x < this.leftThreshold || coords.x > vw - this.rightThreshold) {
+			// ignore this gesture, it started in the side menu touch zone
+			this.shouldCapture = false;
+			return;
+		}
 
-  }
+		// the starting point looks good, let's see what happens when we move
 
-  private _onMove(ev: TouchEvent) {
+		this.initialCoords = coords;
+		if (this.config.shortSwipeDuration > 0) this.initialTimestamp = Date.now();
+		this.lastPosX = coords.x;
 
-    const coords: PointerCoordinates = pointerCoord(ev);
+	}
 
-    if (!this.isDragging) {
+	private _onMove(ev: TouchEvent) {
+		if (this.swipeEnabledPerTab[this.selectedTabIndex] === false) return;
+		
+		const coords: PointerCoordinates = pointerCoord(ev);
 
-      if (typeof this.shouldCapture !== 'boolean')
-      // we haven't decided yet if we want to capture this gesture
-        this.checkGesture(coords);
+		if (!this.isDragging) {
+
+			if (typeof this.shouldCapture !== 'boolean')
+				// we haven't decided yet if we want to capture this gesture
+				this.checkGesture(coords);
 
 
-      if (this.shouldCapture === true)
-      // gesture is good, let's capture all next onTouchMove events
-        this.isDragging = true;
-      else
-        return;
+			if (this.shouldCapture === true)
+				// gesture is good, let's capture all next onTouchMove events
+				this.isDragging = true;
+			else
+				return;
 
-    }
+		}
 
-    // stop anything else from capturing these events, to make sure the content doesn't slide
-    ev.stopPropagation();
-    ev.preventDefault();
+		// stop anything else from capturing these events, to make sure the content doesn't slide
+		ev.stopPropagation();
+		ev.preventDefault();
 
-    // get delta X
-    const deltaX: number = this.lastPosX - coords.x;
+		// get delta X
+		const deltaX: number = this.lastPosX - coords.x;
 
-    // emit value
-    this.onMove && this.onMove(deltaX);
+		// emit value
+		this.onMove && this.onMove(deltaX);
 
-    // update last X value
-    this.lastPosX = coords.x;
+		// update last X value
+		this.lastPosX = coords.x;
 
-  }
+	}
 
-  private _onEnd(ev: TouchEvent) {
-    const coords: PointerCoordinates = pointerCoord(ev);
+	private _onEnd(ev: TouchEvent) {
+		if (this.swipeEnabledPerTab[this.selectedTabIndex] === false) return;
+		
+		const coords: PointerCoordinates = pointerCoord(ev);
 
-    if (this.shouldCapture === true) {
+		if (this.shouldCapture === true) {
 
-      if (this.config.shortSwipeDuration > 0) {
+			if (this.config.shortSwipeDuration > 0) {
 
-        const deltaTime: number = Date.now() - this.initialTimestamp;
+				const deltaTime: number = Date.now() - this.initialTimestamp;
 
-        if (deltaTime <= this.config.shortSwipeDuration)
-          this.onEnd && this.onEnd(true, coords.x - this.initialCoords.x);
-        else this.onEnd && this.onEnd(false);
+				if (deltaTime <= this.config.shortSwipeDuration)
+					this.onEnd && this.onEnd(true, coords.x - this.initialCoords.x);
+				else this.onEnd && this.onEnd(false);
 
-      } else this.onEnd && this.onEnd(false);
+			} else this.onEnd && this.onEnd(false);
 
-    }
+		}
 
-    this.isDragging = false;
-    this.shouldCapture = undefined;
+		this.isDragging = false;
+		this.shouldCapture = undefined;
 
-  }
+	}
 
-  private checkGesture(newCoords: PointerCoordinates) {
+	private checkGesture(newCoords: PointerCoordinates) {
 
-    const radians = this.config.maxDragAngle * (Math.PI / 180),
-      maxCosine = Math.cos(radians),
-      deltaX = newCoords.x - this.initialCoords.x,
-      deltaY = newCoords.y - this.initialCoords.y,
-      distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+		const radians = this.config.maxDragAngle * (Math.PI / 180),
+			maxCosine = Math.cos(radians),
+			deltaX = newCoords.x - this.initialCoords.x,
+			deltaY = newCoords.y - this.initialCoords.y,
+			distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
-    if (distance >= this.config.dragThreshold) {
-      // swipe is long enough so far
-      // lets check the angle
-      const angle = Math.atan2(deltaY, deltaX),
-        cosine = Math.cos(angle);
+		if (distance >= this.config.dragThreshold) {
+			// swipe is long enough so far
+			// lets check the angle
+			const angle = Math.atan2(deltaY, deltaX),
+				cosine = Math.cos(angle);
 
-      this.shouldCapture = Math.abs(cosine) > maxCosine;
-    }
+			this.shouldCapture = Math.abs(cosine) > maxCosine;
+		}
 
-  }
+	}
 
 }

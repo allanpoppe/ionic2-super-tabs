@@ -8,7 +8,7 @@ import {
   DomController, Platform
 } from 'ionic-angular';
 import { NavigationContainer } from 'ionic-angular/navigation/navigation-container';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs';
 import { Subscription } from 'rxjs/Subscription';
 import { SuperTabsToolbar } from './super-tabs-toolbar';
 import { SuperTabsContainer } from './super-tabs-container';
@@ -60,7 +60,7 @@ export interface SuperTabsConfig {
                         [selectedTab]="selectedTabIndex"
                         (tabSelect)="onToolbarTabSelect($event)"></super-tabs-toolbar>
     <super-tabs-container [config]="config" [tabsCount]="_tabs.length" [selectedTabIndex]="selectedTabIndex"
-                          (tabSelect)="onContainerTabSelect($event)" (onDrag)="onDrag()">
+                          (tabSelect)="onContainerTabSelect($event)" (onDrag)="onDrag()" [globalSwipeEnabled]="globalSwipeEnabled">
       <ng-content></ng-content>
     </super-tabs-container>
   `,
@@ -148,6 +148,19 @@ export class SuperTabs implements OnInit, AfterContentInit, AfterViewInit, OnDes
   }
 
   /**
+   * Tabs swipe enabled
+   * @param val {boolean} enabled
+   */
+  @Input()
+  set globalSwipeEnabled(val: boolean) {
+    this._globalSwipeEnabled = val;
+  }
+
+  get globalSwipeEnabled(): boolean {
+    return this._globalSwipeEnabled;
+  }
+
+  /**
    * Set to true to enable tab buttons scrolling
    * @param val
    */
@@ -207,6 +220,14 @@ export class SuperTabs implements OnInit, AfterContentInit, AfterViewInit, OnDes
    */
   private _selectedTabIndex: number = 0;
 
+  /**
+   * Boolean indicating whether swiping is globally enabled
+   * @type {boolean}
+   * @private
+   */
+  private _globalSwipeEnabled: boolean = true;
+
+  
   /**
    * Any observable subscriptions that we should unsubscribe from when destroying this component
    * @type {Array<Subscription>}
@@ -393,13 +414,13 @@ export class SuperTabs implements OnInit, AfterContentInit, AfterViewInit, OnDes
     this.getTabById(tabId).decreaseBadge(decreaseBy);
   }
 
-  enableTabsSwipe(enable: boolean) {
-    this.tabsContainer.enableTabsSwipe(enable);
-  }
+//   enableTabsSwipe(enable: boolean) {
+//     this.tabsContainer.enableTabsSwipe(enable);
+//   }
 
-  enableTabSwipe(tabId: string, enable: boolean) {
-    this.tabsContainer.enableTabSwipe(this.getTabIndexById(tabId), enable);
-  }
+//   enableTabSwipe(tabId: string, enable: boolean) {
+//     this.tabsContainer.enableTabSwipe(this.getTabIndexById(tabId), enable);
+//   }
 
   showToolbar(show: boolean) {
     this._isToolbarVisible = show;
