@@ -1,0 +1,27 @@
+import { Platform } from 'ionic-angular';
+import { SuperTabsConfig } from './components/super-tabs';
+import { Renderer2 } from '@angular/core';
+export declare class SuperTabsPanGesture {
+    private plt;
+    private el;
+    private config;
+    private rnd;
+    private globalSwipeEnabled;
+    onMove: (delta: number) => void;
+    onEnd: (shortSwipe: boolean, shortSwipeDelta?: number) => void;
+    private initialCoords;
+    private initialTimestamp;
+    private leftThreshold;
+    private rightThreshold;
+    private shouldCapture;
+    private isDragging;
+    private lastPosX;
+    private listeners;
+    selectedTabIndex: number;
+    constructor(plt: Platform, el: HTMLElement, config: SuperTabsConfig, rnd: Renderer2, globalSwipeEnabled?: boolean);
+    destroy(): void;
+    private _onStart(ev);
+    private _onMove(ev);
+    private _onEnd(ev);
+    private checkGesture(newCoords);
+}
