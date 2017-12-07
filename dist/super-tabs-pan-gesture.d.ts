@@ -6,7 +6,6 @@ export declare class SuperTabsPanGesture {
     private el;
     private config;
     private rnd;
-    private globalSwipeEnabled;
     onMove: (delta: number) => void;
     onEnd: (shortSwipe: boolean, shortSwipeDelta?: number) => void;
     private initialCoords;
@@ -18,7 +17,7 @@ export declare class SuperTabsPanGesture {
     private lastPosX;
     private listeners;
     selectedTabIndex: number;
-    constructor(plt: Platform, el: HTMLElement, config: SuperTabsConfig, rnd: Renderer2, globalSwipeEnabled?: boolean);
+    constructor(plt: Platform, el: HTMLElement, config: SuperTabsConfig, rnd: Renderer2);
     destroy(): void;
     private _onStart(ev);
     private _onMove(ev);

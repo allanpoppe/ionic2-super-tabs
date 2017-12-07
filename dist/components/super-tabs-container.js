@@ -135,41 +135,43 @@ var SuperTabsContainer = (function () {
     SuperTabsContainer.prototype.init = function () {
         var _this = this;
         this.refreshDimensions();
-        this.gesture = new SuperTabsPanGesture(this.plt, this.container.nativeElement, this.config, this.rnd, this.globalSwipeEnabled);
-        this.gesture.onMove = function (delta) {
-            // if (this.globalSwipeEnabled === false) return;
-            // if (this.swipeEnabledPerTab[this.selectedTabIndex] === false) return;
-            if ((_this.containerPosition === _this.maxPosX && delta >= 0) || (_this.containerPosition === _this.minPosX && delta <= 0))
-                return;
-            _this.containerPosition += delta;
-            _this.plt.raf(function () {
-                _this.onDrag.emit();
-                _this.moveContainer();
-            });
-        };
-        this.gesture.onEnd = function (shortSwipe, shortSwipeDelta) {
-            // if (this.globalSwipeEnabled === false) return;
-            // if (this.swipeEnabledPerTab[this.selectedTabIndex] === false) return;
-            // get tab index based on container position
-            var tabIndex = Math.round(_this.containerPosition / _this.tabWidth);
-            // handle short swipes
-            // only short swipe if we didn't change tab already in this gesture
-            (tabIndex === _this.selectedTabIndex) && shortSwipe && ((shortSwipeDelta < 0 && tabIndex++) || (shortSwipeDelta > 0 && tabIndex--));
-            // get location based on tab index
-            var position = Math.max(_this.minPosX, Math.min(_this.maxPosX, tabIndex * _this.tabWidth));
-            tabIndex = position / _this.tabWidth;
-            // move container if we changed position
-            if (position !== _this.containerPosition) {
+        if (this.globalSwipeEnabled) {
+            this.gesture = new SuperTabsPanGesture(this.plt, this.container.nativeElement, this.config, this.rnd);
+            this.gesture.onMove = function (delta) {
+                // if (this.globalSwipeEnabled === false) return;
+                // if (this.swipeEnabledPerTab[this.selectedTabIndex] === false) return;
+                if ((_this.containerPosition === _this.maxPosX && delta >= 0) || (_this.containerPosition === _this.minPosX && delta <= 0))
+                    return;
+                _this.containerPosition += delta;
                 _this.plt.raf(function () {
-                    return _this.moveContainer(true, position)
-                        .then(function () {
-                        return _this.ngZone.run(function () { return _this.setSelectedTab(tabIndex); });
-                    });
+                    _this.onDrag.emit();
+                    _this.moveContainer();
                 });
-            }
-            else
-                _this.setSelectedTab(tabIndex);
-        };
+            };
+            this.gesture.onEnd = function (shortSwipe, shortSwipeDelta) {
+                // if (this.globalSwipeEnabled === false) return;
+                // if (this.swipeEnabledPerTab[this.selectedTabIndex] === false) return;
+                // get tab index based on container position
+                var tabIndex = Math.round(_this.containerPosition / _this.tabWidth);
+                // handle short swipes
+                // only short swipe if we didn't change tab already in this gesture
+                (tabIndex === _this.selectedTabIndex) && shortSwipe && ((shortSwipeDelta < 0 && tabIndex++) || (shortSwipeDelta > 0 && tabIndex--));
+                // get location based on tab index
+                var position = Math.max(_this.minPosX, Math.min(_this.maxPosX, tabIndex * _this.tabWidth));
+                tabIndex = position / _this.tabWidth;
+                // move container if we changed position
+                if (position !== _this.containerPosition) {
+                    _this.plt.raf(function () {
+                        return _this.moveContainer(true, position)
+                            .then(function () {
+                            return _this.ngZone.run(function () { return _this.setSelectedTab(tabIndex); });
+                        });
+                    });
+                }
+                else
+                    _this.setSelectedTab(tabIndex);
+            };
+        }
     };
     /**
      * Set the selected tab.

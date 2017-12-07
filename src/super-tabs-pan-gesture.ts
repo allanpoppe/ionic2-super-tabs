@@ -31,12 +31,8 @@ export class SuperTabsPanGesture {
 		private plt: Platform,
 		private el: HTMLElement,
 		private config: SuperTabsConfig,
-		private rnd: Renderer2,
-		private globalSwipeEnabled: boolean = true
-		// private swipeEnabledPerTab: { [index: number]: boolean } = null
+		private rnd: Renderer2
 	) {
-		if (!this.globalSwipeEnabled) return;
-
 		this.listeners.push(
 			rnd.listen(el, 'touchstart', this._onStart.bind(this)),
 			rnd.listen(el, 'touchmove', this._onMove.bind(this)),

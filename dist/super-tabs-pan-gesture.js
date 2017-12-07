@@ -1,19 +1,13 @@
 import { pointerCoord } from 'ionic-angular/util/dom';
 var SuperTabsPanGesture = (function () {
-    function SuperTabsPanGesture(plt, el, config, rnd, globalSwipeEnabled
-        // private swipeEnabledPerTab: { [index: number]: boolean } = null
-    ) {
-        if (globalSwipeEnabled === void 0) { globalSwipeEnabled = true; }
+    function SuperTabsPanGesture(plt, el, config, rnd) {
         this.plt = plt;
         this.el = el;
         this.config = config;
         this.rnd = rnd;
-        this.globalSwipeEnabled = globalSwipeEnabled;
         this.leftThreshold = 0;
         this.rightThreshold = 0;
         this.listeners = [];
-        if (!this.globalSwipeEnabled)
-            return;
         this.listeners.push(rnd.listen(el, 'touchstart', this._onStart.bind(this)), rnd.listen(el, 'touchmove', this._onMove.bind(this)), rnd.listen(el, 'touchend', this._onEnd.bind(this)));
         if (config.sideMenu === 'both' || config.sideMenu === 'left') {
             this.leftThreshold = config.sideMenuThreshold;

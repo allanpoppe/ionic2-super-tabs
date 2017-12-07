@@ -152,47 +152,49 @@ export class SuperTabsContainer implements AfterViewInit, OnDestroy {
 	private init() {
 
 		this.refreshDimensions();
+		
+		if (this.globalSwipeEnabled) {
+			this.gesture = new SuperTabsPanGesture(this.plt, this.container.nativeElement, this.config, this.rnd);
 
-		this.gesture = new SuperTabsPanGesture(this.plt, this.container.nativeElement, this.config, this.rnd, this.globalSwipeEnabled);
+			this.gesture.onMove = (delta: number) => {
+				// if (this.globalSwipeEnabled === false) return;
+				// if (this.swipeEnabledPerTab[this.selectedTabIndex] === false) return;
+				if ((this.containerPosition === this.maxPosX && delta >= 0) || (this.containerPosition === this.minPosX && delta <= 0)) return;
+				this.containerPosition += delta;
+				this.plt.raf(() => {
+					this.onDrag.emit();
+					this.moveContainer();
+				})
+			};
 
-		this.gesture.onMove = (delta: number) => {
-			// if (this.globalSwipeEnabled === false) return;
-			// if (this.swipeEnabledPerTab[this.selectedTabIndex] === false) return;
-			if ((this.containerPosition === this.maxPosX && delta >= 0) || (this.containerPosition === this.minPosX && delta <= 0)) return;
-			this.containerPosition += delta;
-			this.plt.raf(() => {
-				this.onDrag.emit();
-				this.moveContainer();
-			})
-		};
+			this.gesture.onEnd = (shortSwipe: boolean, shortSwipeDelta?: number) => {
+				// if (this.globalSwipeEnabled === false) return;
+				// if (this.swipeEnabledPerTab[this.selectedTabIndex] === false) return;
 
-		this.gesture.onEnd = (shortSwipe: boolean, shortSwipeDelta?: number) => {
-			// if (this.globalSwipeEnabled === false) return;
-			// if (this.swipeEnabledPerTab[this.selectedTabIndex] === false) return;
+				// get tab index based on container position
+				let tabIndex = Math.round(this.containerPosition / this.tabWidth);
 
-			// get tab index based on container position
-			let tabIndex = Math.round(this.containerPosition / this.tabWidth);
+				// handle short swipes
+				// only short swipe if we didn't change tab already in this gesture
+				(tabIndex === this.selectedTabIndex) && shortSwipe && ((shortSwipeDelta < 0 && tabIndex++) || (shortSwipeDelta > 0 && tabIndex--));
 
-			// handle short swipes
-			// only short swipe if we didn't change tab already in this gesture
-			(tabIndex === this.selectedTabIndex) && shortSwipe && ((shortSwipeDelta < 0 && tabIndex++) || (shortSwipeDelta > 0 && tabIndex--));
+				// get location based on tab index
+				const position = Math.max(this.minPosX, Math.min(this.maxPosX, tabIndex * this.tabWidth));
 
-			// get location based on tab index
-			const position = Math.max(this.minPosX, Math.min(this.maxPosX, tabIndex * this.tabWidth));
+				tabIndex = position / this.tabWidth;
 
-			tabIndex = position / this.tabWidth;
+				// move container if we changed position
+				if (position !== this.containerPosition) {
+					this.plt.raf(() =>
+						this.moveContainer(true, position)
+							.then(() =>
+								this.ngZone.run(() => this.setSelectedTab(tabIndex))
+							)
+					);
+				} else this.setSelectedTab(tabIndex);
 
-			// move container if we changed position
-			if (position !== this.containerPosition) {
-				this.plt.raf(() =>
-					this.moveContainer(true, position)
-						.then(() =>
-							this.ngZone.run(() => this.setSelectedTab(tabIndex))
-						)
-				);
-			} else this.setSelectedTab(tabIndex);
-
-		};
+			};
+		}
 	}
 
 	/**
