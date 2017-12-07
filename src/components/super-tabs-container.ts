@@ -152,7 +152,7 @@ export class SuperTabsContainer implements AfterViewInit, OnDestroy {
 
     this.refreshDimensions();
 
-    this.gesture = new SuperTabsPanGesture(this.plt, this.container.nativeElement, this.config, this.rnd);
+    this.gesture = new SuperTabsPanGesture(this.plt, this.container.nativeElement, this.config, this.rnd, this.globalSwipeEnabled);
 
     this.gesture.onMove = (delta: number) => {
       if (this.globalSwipeEnabled === false) return;
