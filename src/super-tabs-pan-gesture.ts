@@ -32,8 +32,8 @@ export class SuperTabsPanGesture {
 		private el: HTMLElement,
 		private config: SuperTabsConfig,
 		private rnd: Renderer2,
-		private globalSwipeEnabled: boolean,
-		private swipeEnabledPerTab: { [index: number]: boolean }
+		private globalSwipeEnabled: boolean = true
+		// private swipeEnabledPerTab: { [index: number]: boolean } = null
 	) {
 		if (!this.globalSwipeEnabled) return;
 
@@ -58,7 +58,7 @@ export class SuperTabsPanGesture {
 	}
 
 	private _onStart(ev: TouchEvent) {
-		if (this.swipeEnabledPerTab[this.selectedTabIndex] === false) return;
+		// if (this.swipeEnabledPerTab[this.selectedTabIndex] === false) return;
 
 		const coords: PointerCoordinates = pointerCoord(ev),
 			vw = this.plt.width();
@@ -78,7 +78,7 @@ export class SuperTabsPanGesture {
 	}
 
 	private _onMove(ev: TouchEvent) {
-		if (this.swipeEnabledPerTab[this.selectedTabIndex] === false) return;
+		// if (this.swipeEnabledPerTab[this.selectedTabIndex] === false) return;
 		
 		const coords: PointerCoordinates = pointerCoord(ev);
 
@@ -113,7 +113,7 @@ export class SuperTabsPanGesture {
 	}
 
 	private _onEnd(ev: TouchEvent) {
-		if (this.swipeEnabledPerTab[this.selectedTabIndex] === false) return;
+		// if (this.swipeEnabledPerTab[this.selectedTabIndex] === false) return;
 		
 		const coords: PointerCoordinates = pointerCoord(ev);
 
